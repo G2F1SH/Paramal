@@ -32,6 +32,23 @@ def blend_overlay(base: np.ndarray, blend: np.ndarray) -> np.ndarray:
     return (result * 255).astype(np.uint8)
 
 
+def simple_gradients(height: np.ndarray, strength: float) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute gradients using the original 4-neighbor sampling method.
+    """
+    dx = np.zeros_like(height)
+    dx[:, 1:-1] = (height[:, 2:] - height[:, :-2]) * strength
+    dx[:, 0] = (height[:, 1] - height[:, 0]) * strength
+    dx[:, -1] = (height[:, -1] - height[:, -2]) * strength
+
+    dy = np.zeros_like(height)
+    dy[1:-1, :] = (height[:-2, :] - height[2:, :]) * strength
+    dy[0, :] = (height[0, :] - height[1, :]) * strength
+    dy[-1, :] = (height[-2, :] - height[-1, :]) * strength
+
+    return dx, dy
+
+
 def sobel_gradients(height: np.ndarray, strength: float) -> tuple[np.ndarray, np.ndarray]:
     """
     Compute Sobel gradients from a height map using edge padding.
@@ -64,11 +81,54 @@ def sobel_gradients(height: np.ndarray, strength: float) -> tuple[np.ndarray, np
     return dx, dy
 
 
+def scharr_gradients(height: np.ndarray, strength: float) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute Scharr gradients from a height map using edge padding.
+    """
+    padded = np.pad(height, ((1, 1), (1, 1)), mode='edge')
+
+    top_left = padded[:-2, :-2]
+    top = padded[:-2, 1:-1]
+    top_right = padded[:-2, 2:]
+    left = padded[1:-1, :-2]
+    right = padded[1:-1, 2:]
+    bottom_left = padded[2:, :-2]
+    bottom = padded[2:, 1:-1]
+    bottom_right = padded[2:, 2:]
+
+    dx = (
+        -3.0 * top_left + 3.0 * top_right
+        - 10.0 * left + 10.0 * right
+        - 3.0 * bottom_left + 3.0 * bottom_right
+    ) * strength
+
+    dy = (
+        3.0 * top_left + 10.0 * top + 3.0 * top_right
+        - 3.0 * bottom_left - 10.0 * bottom - 3.0 * bottom_right
+    ) * strength
+
+    dx /= 32.0
+    dy /= 32.0
+
+    return dx, dy
+
+
+def get_gradients(height: np.ndarray, strength: float, operator: str) -> tuple[np.ndarray, np.ndarray]:
+    if operator == 'simple':
+        return simple_gradients(height, strength)
+    if operator == 'sobel':
+        return sobel_gradients(height, strength)
+    if operator == 'scharr':
+        return scharr_gradients(height, strength)
+    raise ValueError(f"Unsupported operator: {operator}")
+
+
 def alpha_to_normal(input_path: str, output_path: str,
                     strength: float = 2.0,
                     mode: str = 'opengl',
                     mix: bool = False,
-                    scale: int = 1):
+                    scale: int = 1,
+                    operator: str = 'scharr'):
     img = Image.open(input_path)
 
     if img.mode != 'RGBA':
@@ -89,7 +149,7 @@ def alpha_to_normal(input_path: str, output_path: str,
     
     height = height / 255.0
     
-    dx, dy = sobel_gradients(height, strength)
+    dx, dy = get_gradients(height, strength, operator)
     
     normal_x = -dx
     
@@ -148,10 +208,13 @@ def main():
                         help='mix set')
     parser.add_argument('--scale', type=int, default=1,
                         help='scale factor, default 1 (no scale), e.g. 8 means 16x16 -> 128x128')
+    parser.add_argument('-o', '--operator', choices=['simple', 'sobel', 'scharr'],
+                        default='scharr',
+                        help='gradient operator: simple, sobel or scharr (default: scharr)')
 
     args = parser.parse_args()
 
-    alpha_to_normal(args.input, args.output, args.strength, args.mode, args.mix, args.scale)
+    alpha_to_normal(args.input, args.output, args.strength, args.mode, args.mix, args.scale, args.operator)
 
 
 if __name__ == '__main__':

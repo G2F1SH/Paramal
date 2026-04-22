@@ -8,6 +8,7 @@ A command-line tool for converting alpha channels to normal maps.
 - Convert alpha channel to normal map using height information
 - Support for OpenGL and DirectX normal map modes
 - Adjustable strength parameter for normal intensity
+- Multiple gradient operators: `simple`, `sobel`, and `scharr`
 - Optional overlay blending with original image
 - Image scaling support for higher resolution output
 - Automatic creation of output directories
@@ -22,6 +23,7 @@ python Paramal.py <input> <output> [options]
 
 - `-s, --strength`: Normal strength (default: 5.0)
 - `-m, --mode`: Normal mode - `opengl` or `dx` (default: opengl)
+- `-o, --operator`: Gradient operator - `simple`, `sobel`, or `scharr` (default: scharr)
 - `--mix`: Blend the original image with the normal map using overlay mode
 - `--scale`: Scale factor (default: 1, e.g. 8 means 16x16 -> 128x128)
 
@@ -33,6 +35,12 @@ python Paramal.py input.png output.png
 
 # Custom strength with DirectX mode
 python Paramal.py input.png output.png -s 3.0 -m dx
+
+# Use the original 4-neighbor sampling method
+python Paramal.py input.png output.png -o simple
+
+# Use the Scharr operator
+python Paramal.py input.png output.png -o scharr
 
 # Mix with original image and scale up
 python Paramal.py input.png output.png --mix --scale 4
