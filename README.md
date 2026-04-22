@@ -16,7 +16,7 @@ A command-line tool for converting alpha channels to normal maps.
 ## Usage
 
 ```bash
-python Paramal.py <input> <output> [options]
+Paramal <input> <output> [options]
 ```
 
 ### Options
@@ -31,19 +31,19 @@ python Paramal.py <input> <output> [options]
 
 ```bash
 # Basic conversion
-python Paramal.py input.png output.png
+Paramal input.png output.png
 
 # Custom strength with DirectX mode
-python Paramal.py input.png output.png -s 3.0 -m dx
+Paramal input.png output.png -s 3.0 -m dx
 
 # Use the original 4-neighbor sampling method
-python Paramal.py input.png output.png -o simple
+Paramal input.png output.png -o simple
 
 # Use the Scharr operator
-python Paramal.py input.png output.png -o scharr
+Paramal input.png output.png -o scharr
 
 # Mix with original image and scale up
-python Paramal.py input.png output.png --mix --scale 4
+Paramal input.png output.png --mix --scale 4
 ```
 
 ## Dependencies
@@ -56,5 +56,5 @@ pip install Pillow numpy
 
 ```bash
 pip install Pillow numpy PyInstaller
-python -m PyInstaller --onefile --name Paramal --icon logo.ico Paramal.py
+python -m PyInstaller --onefile --name Paramal --icon logo.ico Paramal.py README.md README_CN.md
 ```
