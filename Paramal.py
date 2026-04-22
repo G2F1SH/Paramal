@@ -32,6 +32,38 @@ def blend_overlay(base: np.ndarray, blend: np.ndarray) -> np.ndarray:
     return (result * 255).astype(np.uint8)
 
 
+def sobel_gradients(height: np.ndarray, strength: float) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute Sobel gradients from a height map using edge padding.
+    """
+    padded = np.pad(height, ((1, 1), (1, 1)), mode='edge')
+
+    top_left = padded[:-2, :-2]
+    top = padded[:-2, 1:-1]
+    top_right = padded[:-2, 2:]
+    left = padded[1:-1, :-2]
+    right = padded[1:-1, 2:]
+    bottom_left = padded[2:, :-2]
+    bottom = padded[2:, 1:-1]
+    bottom_right = padded[2:, 2:]
+
+    dx = (
+        -top_left + top_right
+        - 2.0 * left + 2.0 * right
+        - bottom_left + bottom_right
+    ) * strength
+
+    dy = (
+        top_left + 2.0 * top + top_right
+        - bottom_left - 2.0 * bottom - bottom_right
+    ) * strength
+
+    dx /= 8.0
+    dy /= 8.0
+
+    return dx, dy
+
+
 def alpha_to_normal(input_path: str, output_path: str,
                     strength: float = 2.0,
                     mode: str = 'opengl',
@@ -57,17 +89,7 @@ def alpha_to_normal(input_path: str, output_path: str,
     
     height = height / 255.0
     
-    h, w = height.shape
-    
-    dx = np.zeros_like(height)
-    dx[:, 1:-1] = (height[:, 2:] - height[:, :-2]) * strength
-    dx[:, 0] = (height[:, 1] - height[:, 0]) * strength
-    dx[:, -1] = (height[:, -1] - height[:, -2]) * strength
-    
-    dy = np.zeros_like(height)
-    dy[1:-1, :] = (height[:-2, :] - height[2:, :]) * strength
-    dy[0, :] = (height[0, :] - height[1, :]) * strength
-    dy[-1, :] = (height[-2, :] - height[-1, :]) * strength
+    dx, dy = sobel_gradients(height, strength)
     
     normal_x = -dx
     
