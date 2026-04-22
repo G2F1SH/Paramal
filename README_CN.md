@@ -16,7 +16,7 @@
 ## 使用方法
 
 ```bash
-python Paramal.py <输入路径> <输出路径> [选项]
+Paramal <输入路径> <输出路径> [选项]
 ```
 
 ### 选项
@@ -31,19 +31,19 @@ python Paramal.py <输入路径> <输出路径> [选项]
 
 ```bash
 # 基础转换
-python Paramal.py input.png output.png
+Paramal input.png output.png
 
 # 自定义强度并使用 DirectX 模式
-python Paramal.py input.png output.png -s 3.0 -m dx
+Paramal input.png output.png -s 3.0 -m dx
 
 # 使用最原始的上下左右采样方式
-python Paramal.py input.png output.png -o simple
+Paramal input.png output.png -o simple
 
 # 使用 Scharr 算子
-python Paramal.py input.png output.png -o scharr
+Paramal input.png output.png -o scharr
 
 # 与原图混合并放大
-python Paramal.py input.png output.png --mix --scale 4
+Paramal input.png output.png --mix --scale 4
 ```
 
 ## 依赖
@@ -56,5 +56,5 @@ pip install Pillow numpy
 
 ```bash
 pip install Pillow numpy PyInstaller
-python -m PyInstaller --onefile --name Paramal --icon logo.ico Paramal.py
+python -m PyInstaller --onefile --name Paramal --icon logo.ico Paramal.py README.md README_CN.md
 ```
